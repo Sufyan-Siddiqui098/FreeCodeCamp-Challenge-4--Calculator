@@ -7,21 +7,22 @@ export const calculatorSlice = createSlice({
         display: "0",
         decimal: false,
         calculation: '',
-        operator: '',
-        result: false
+        operator: ''
     },
     reducers:{
         //HANDLES NUMBERS ONLY
         handleNumber : (state, action)=>{
+            let i = ''
             if(state.operator && !state.decimal){
-                state.calculation += state.operator;
+                if(state.operator.charAt(state.operator.length-1)==='-' && state.operator.length>1){
+                    state.calculation += state.operator.charAt(state.operator.length-2)
+                    i = state.operator.charAt(state.operator.length-1)
+                } else{
+                    state.calculation += state.operator.charAt(state.operator.length-1);
+                }
                 state.operator = '';  // Reset the operator
             }
-            if(state.result){
-                state.calculation = '';
-                state.display = '0';
-                state.result = false;
-            }
+           
             if((action.payload === 0 || action.payload ==='0') && (state.number==='0' || state.number===0)){
                 console.log("zero is present")
                 state.number = 0 ;
@@ -30,7 +31,6 @@ export const calculatorSlice = createSlice({
             else if((action.payload !== 0 || action.payload !=='0') && (state.number==='0' || state.number===0)){
                 console.log("action", action.payload)
                 state.number = action.payload;
-                // state.display = state.number;
             }
             else{
                 console.log("Inside Else");
@@ -40,12 +40,15 @@ export const calculatorSlice = createSlice({
 
             //If the display is already 0 and there is no decimal then it shouldn't let the zero be enter in the value;
             if(state.display!=='0' && action.payload!=='0'){
-                state.calculation += action.payload;
+                state.calculation += i+action.payload;
                 // state.calculation = state.number;
             } 
             //If the decimal is present then allow zero to be enter in calculation value;
             else if(state.decimal) {
-                state.calculation +=action.payload
+                state.calculation += i+action.payload
+            }
+            else{
+                state.calculation += i+action.payload
             }
             console.log("number ", state.number)
             
@@ -67,7 +70,11 @@ export const calculatorSlice = createSlice({
                     state.number += action.payload;
                 }
                 if(state.operator){
-                    state.calculation += state.operator;
+                    if(state.operator.charAt(state.operator.length-1)==='-' && state.operator.length>1){
+                        state.calculation += state.operator.charAt(state.operator.length-2)
+                    } else{
+                        state.calculation += state.operator.charAt(state.operator.length-1);
+                    }
                     state.operator =''; // To reset the operator
                 }
                 state.display = state.number;
@@ -80,7 +87,7 @@ export const calculatorSlice = createSlice({
         //OPERATORS
         handleOperator: (state, action) => {
             state.display = action.payload;
-            state.operator = action.payload;
+            state.operator += action.payload;
             state.decimal = false;
             state.number = "0";
             console.log(state.operator)
@@ -91,7 +98,6 @@ export const calculatorSlice = createSlice({
             //eslint-disable-next-line
             let r = eval(state.calculation)
             state.number = '0';
-            state.result = true;
             state.decimal = false;
             state.display = r;
             state.calculation = r; 
